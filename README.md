@@ -41,18 +41,14 @@ Este proyecto permite calcular las cantidades ajustadas de ingredientes para pre
 1. Crear la base de datos (ejemplo):
 
 ```bash
-createdb racionadordb
-
-psql -d racionadordb -f db/schema.sql
-
-export PG_DB=racionadordb
+createdb racionador
+psql -d racionador -f db/schema.sql
+export PG_DB=racionador
 export PG_USER=postgres
 export PG_PASS=mlx
 export PG_HOST=localhost
 export PG_PORT=5432
-
 pip install flask psycopg2-binary requests numpy
-
 cd py
 export FLASK_APP=app.py
 flask run

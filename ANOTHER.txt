@@ -1,0 +1,181 @@
+Por supuesto, aquí tienes una guía paso a paso para activar y ejecutar correctamente el programa completo desde cero, incluyendo la configuración de la base de datos, entorno Python, y ejecución del servidor y frontend.
+
+---
+
+# Guía paso a paso para activar el programa "Racionador de Comidas"
+
+---
+
+## 1. Preparar el entorno
+
+### 1.1 Instalar PostgreSQL
+
+- Descarga e instala PostgreSQL desde https://www.postgresql.org/download/ según tu sistema operativo.
+- Durante la instalación, crea un usuario (por ejemplo, `postgres`) y una contraseña segura.
+
+### 1.2 Crear la base de datos
+
+Abre una terminal o consola y ejecuta:
+
+```bash
+createdb racionador
+```
+
+Si `createdb` no está en tu PATH, puedes usar:
+
+```bash
+psql -U postgres
+# Luego en la consola psql:
+CREATE DATABASE racionador;
+\q
+```
+
+---
+
+## 2. Configurar la base de datos
+
+### 2.1 Ejecutar el script de creación de tablas
+
+Desde la terminal, ejecuta:
+
+```bash
+psql -d racionador -f db/schema.sql
+```
+
+Esto creará las tablas necesarias (`recetas`, `insumos`, `receta_insumos`).
+
+---
+
+## 3. Configurar variables de entorno
+
+Para que la aplicación Python pueda conectarse a la base de datos y a la API de DeepSeek, define las variables de entorno.
+
+En Linux/macOS (terminal):
+
+```bash
+export PG_DB=racionador
+export PG_USER=postgres
+export PG_PASS=tu_contraseña_postgres
+export PG_HOST=localhost
+export PG_PORT=5432
+
+export DEESEEK_API_KEY=tu_api_key_deepseek
+```
+
+En Windows (PowerShell):
+
+```powershell
+setx PG_DB "racionador"
+setx PG_USER "postgres"
+setx PG_PASS "tu_contraseña_postgres"
+setx PG_HOST "localhost"
+setx PG_PORT "5432"
+
+setx DEESEEK_API_KEY "tu_api_key_deepseek"
+```
+
+**Nota:** Reinicia la terminal para que los cambios surtan efecto.
+
+---
+
+## 4. Instalar dependencias Python
+
+Asegúrate de tener Python 3.8+ instalado.
+
+Crea un entorno virtual (opcional pero recomendado):
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
+```
+
+Instala las librerías necesarias:
+
+```bash
+pip install flask psycopg2-binary requests numpy
+```
+
+---
+
+## 5. Ejecutar la aplicación backend
+
+Desde la carpeta `py/` donde está `app.py`, ejecuta:
+
+```bash
+export FLASK_APP=app.py  # Linux/macOS
+set FLASK_APP=app.py     # Windows CMD
+$env:FLASK_APP = "app.py" # Windows PowerShell
+
+flask run
+```
+
+Por defecto, Flask correrá en `http://127.0.0.1:5000`.
+
+---
+
+## 6. Preparar el frontend
+
+### 6.1 Servir archivos estáticos
+
+Para desarrollo rápido, puedes abrir el archivo `HTML/index.html` directamente en el navegador, pero para que las llamadas a la API funcionen correctamente (por CORS y rutas relativas), es mejor servirlo con un servidor HTTP.
+
+Ejemplo con Python:
+
+Desde la raíz del proyecto:
+
+```bash
+python -m http.server 8000
+```
+
+Luego abre en el navegador:
+
+```
+http://localhost:8000/HTML/index.html
+```
+
+---
+
+## 7. Uso de la aplicación
+
+1. En la interfaz web, espera que el selector de recetas se cargue (si no hay recetas, crea alguna manualmente o usa el generador IA).
+2. Selecciona una receta y escribe la cantidad de personas.
+3. Presiona "Calcular raciones" para ver los ingredientes ajustados y el precio total.
+4. Para generar una receta con IA:
+   - Escribe una descripción en el área de texto.
+   - Presiona "Generar receta".
+   - Revisa la receta generada.
+   - Si te gusta, presiona "Guardar receta" para almacenarla en la base de datos.
+5. La nueva receta aparecerá en el selector para futuros cálculos.
+
+---
+
+## 8. Insertar recetas manualmente (opcional)
+
+Si quieres agregar recetas sin usar la IA, puedes hacerlo con consultas SQL o creando scripts Python que usen la función `guardar_receta` en `py/recetas.py`.
+
+Ejemplo rápido en Python:
+
+```python
+from py.recetas import guardar_receta
+
+insumos = [
+    {"nombre": "Pollo", "cantidad_por_persona": 150, "perdida_porcentaje": 5, "precio_por_unidad": 0.005},
+    {"nombre": "Arroz", "cantidad_por_persona": 200, "perdida_porcentaje": 2, "precio_por_unidad": 0.001},
+    {"nombre": "Aceite", "cantidad_por_persona": 10, "perdida_porcentaje": 0, "precio_por_unidad": 0.01},
+]
+
+guardar_receta("Guisado de Pollo", "Receta tradicional de guisado de pollo", insumos)
+```
+
+---
+
+## 9. Notas finales
+
+- Asegúrate que la API de DeepSeek esté activa y la clave sea válida.
+- Para producción, considera usar un servidor WSGI (gunicorn, uWSGI) y configurar HTTPS.
+- Puedes mejorar la interfaz y agregar autenticación si es necesario.
+
+---
+
+Si tienes dudas en algún paso, dime y te ayudo a resolverlo.
